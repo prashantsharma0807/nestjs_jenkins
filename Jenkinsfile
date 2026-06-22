@@ -11,8 +11,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    docker build -t $APP_NAME .
-                '''
+                  docker build --progress=plain -t nestjs-app .
+             '''
             }
         }
 
