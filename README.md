@@ -1,98 +1,552 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS CI/CD Deployment using Jenkins, Docker and AWS EC2
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Project Information
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Repository:
+https://github.com/prashantsharma0807/nestjs_jenkins
 
-## Description
+Branch:
+main
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Architecture:
 
-## Project setup
+GitHub Repository
+↓
+Jenkins (Docker Container)
+↓
+Docker Build
+↓
+NestJS Docker Container
+↓
+EC2 Instance
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+# 1. Create EC2 Instance
 
-```bash
-# development
-$ npm run start
+Launch Ubuntu EC2 Instance.
 
-# watch mode
-$ npm run start:dev
+Security Group Inbound Rules:
 
-# production mode
-$ npm run start:prod
-```
+* SSH (22)
+* HTTP (80)
+* HTTPS (443)
+* Jenkins (8080)
+* Application (3000)
 
-## Run tests
+---
+
+# 2. Connect to EC2
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+chmod 400 key.pem
+ssh -i key.pem ubuntu@<EC2_PUBLIC_IP>
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Verification:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+whoami
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Expected:
 
-## Resources
+```text
+ubuntu
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# 3. Install Java
 
-## Support
+Jenkins requires Java.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+sudo apt update -y
+sudo apt install openjdk-21-jdk -y
+```
 
-## Stay in touch
+Verification:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+java -version
+```
 
-## License
+Expected:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```text
+openjdk version "21"
+```
+
+---
+
+# 4. Install Docker
+
+```bash
+sudo apt install docker.io -y
+```
+
+Start Docker:
+
+```bash
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+Verification:
+
+```bash
+docker --version
+```
+
+Expected:
+
+```text
+Docker version ...
+```
+
+Check Service:
+
+```bash
+sudo systemctl status docker
+```
+
+Expected:
+
+```text
+active (running)
+```
+
+---
+
+# 5. Install Git
+
+```bash
+sudo apt install git -y
+```
+
+Verification:
+
+```bash
+git --version
+```
+
+Expected:
+
+```text
+git version ...
+```
+
+---
+
+# 6. Create Custom Jenkins Image
+
+Create folder:
+
+```bash
+mkdir jenkins-docker
+cd jenkins-docker
+```
+
+Create Dockerfile:
+
+```dockerfile
+FROM jenkins/jenkins:lts-jdk21
+
+USER root
+
+RUN apt-get update && \
+    apt-get install -y docker.io
+
+USER jenkins
+```
+
+Build Image:
+
+```bash
+docker build -t jenkins-docker .
+```
+
+Verification:
+
+```bash
+docker images
+```
+
+Expected:
+
+```text
+jenkins-docker
+```
+
+---
+
+# 7. Run Jenkins Container
+
+```bash
+docker run -d \
+  --name jenkins \
+  -u root \
+  -p 8080:8080 \
+  -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  jenkins-docker
+```
+
+Verification:
+
+```bash
+docker ps
+```
+
+Expected:
+
+```text
+jenkins
+Up
+0.0.0.0:8080->8080
+```
+
+---
+
+# 8. Verify Docker Inside Jenkins
+
+Enter Container:
+
+```bash
+docker exec -it jenkins bash
+```
+
+Verify Docker:
+
+```bash
+docker --version
+```
+
+Expected:
+
+```text
+Docker version ...
+```
+
+Verify Socket Access:
+
+```bash
+docker ps
+```
+
+Expected:
+
+List of host containers.
+
+Exit:
+
+```bash
+exit
+```
+
+---
+
+# 9. Open Jenkins
+
+Open Browser:
+
+http://<EC2_PUBLIC_IP>:8080
+
+Verification:
+
+Jenkins Unlock Screen appears.
+
+---
+
+# 10. Get Initial Password
+
+```bash
+docker logs jenkins
+```
+
+Copy password and unlock Jenkins.
+
+Verification:
+
+Jenkins Dashboard opens successfully.
+
+---
+
+# 11. Install Jenkins Plugins
+
+Install:
+
+* Git Plugin
+* Pipeline Plugin
+* Docker Pipeline Plugin
+* GitHub Integration Plugin
+
+Verification:
+
+Manage Jenkins → Plugins
+
+Installed plugins should be visible.
+
+---
+
+# 12. Configure Docker Permission
+
+```bash
+sudo chmod 666 /var/run/docker.sock
+```
+
+Verification:
+
+```bash
+ls -l /var/run/docker.sock
+```
+
+Expected:
+
+```text
+srw-rw-rw-
+```
+
+---
+
+# 13. Create Pipeline Job
+
+Dashboard → New Item
+
+Select:
+
+Pipeline
+
+Name:
+
+NestJS-Deploy
+
+---
+
+# 14. Configure SCM
+
+Pipeline Definition:
+
+Pipeline script from SCM
+
+SCM:
+
+Git
+
+Repository URL:
+
+https://github.com/prashantsharma0807/nestjs_jenkins.git
+
+Branch:
+
+*/main
+
+Script Path:
+
+Jenkinsfile
+
+Save.
+
+Verification:
+
+Click Build Now.
+
+Jenkins should successfully clone repository.
+
+---
+
+# 15. Dockerfile
+
+Project contains:
+
+```dockerfile
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["node", "dist/main"]
+```
+
+---
+
+# 16. Jenkinsfile
+
+Project contains:
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = "nestjs-app"
+    }
+
+    stages {
+
+        stage('Build') {
+            steps {
+                sh 'docker build -t $APP_NAME .'
+            }
+        }
+
+        stage('Stop Old Container') {
+            steps {
+                sh 'docker stop $APP_NAME || true'
+                sh 'docker rm $APP_NAME || true'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh 'docker run -d -p 3000:3000 --name $APP_NAME $APP_NAME'
+            }
+        }
+    }
+}
+```
+
+---
+
+# 17. Run Pipeline
+
+Click:
+
+Build Now
+
+Verification:
+
+Build Console Output ends with:
+
+```text
+Finished: SUCCESS
+```
+
+---
+
+# 18. Verify Application Container
+
+```bash
+docker ps
+```
+
+Expected:
+
+```text
+jenkins
+nestjs-app
+```
+
+---
+
+# 19. Verify Application
+
+Browser:
+
+http://<EC2_PUBLIC_IP>:3000
+
+Expected:
+
+NestJS application loads successfully.
+
+---
+
+# 20. Configure GitHub Webhook (Optional)
+
+GitHub Repository:
+
+Settings → Webhooks
+
+Add Webhook
+
+Payload URL:
+
+http://<EC2_PUBLIC_IP>:8080/github-webhook/
+
+Content Type:
+
+application/json
+
+Events:
+
+Just the push event
+
+---
+
+# 21. Enable Jenkins Trigger
+
+Job Configuration
+
+Build Triggers:
+
+✓ GitHub hook trigger for GITScm polling
+
+Save.
+
+---
+
+# 22. Verify Auto Deployment
+
+Make a code change.
+
+Push to GitHub:
+
+```bash
+git add .
+git commit -m "Webhook Test"
+git push origin main
+```
+
+Verification:
+
+Jenkins automatically starts a new build without clicking Build Now.
+
+---
+
+# Final Verification Commands
+
+Check Jenkins Container:
+
+```bash
+docker ps
+```
+
+Check Jenkins Logs:
+
+```bash
+docker logs jenkins
+```
+
+Check Application Container:
+
+```bash
+docker ps
+```
+
+Check Application Logs:
+
+```bash
+docker logs nestjs-app
+```
+
+Check Application:
+
+http://<EC2_PUBLIC_IP>:3000
+
+Check Jenkins:
+
+http://<EC2_PUBLIC_IP>:8080
+
+```
+```
