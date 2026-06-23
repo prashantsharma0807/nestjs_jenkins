@@ -9,4 +9,12 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('app')
+  getHello2(): any {
+    return {
+      status: 200,
+      message: 'app is working',
+    };
+  }
 }
