@@ -3,38 +3,34 @@ pipeline {
 
     environment {
         APP_NAME = "nestjs-app"
-        PORT = "3000"
     }
 
     stages {
 
-        stage('Build Docker Image') {
+        stage('Checkout') {
             steps {
-                sh '''
-                  docker build --progress=plain -t nestjs-app .
-             '''
+                git branch: 'main',
+                    url: 'https://github.com/prashantsharma0807/nestjs_jenkins.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'docker build -t $APP_NAME .'
             }
         }
 
         stage('Stop Old Container') {
             steps {
-                sh '''
-                    docker stop $APP_NAME || true
-                    docker rm $APP_NAME || true
-                '''
+                sh 'docker stop $APP_NAME || true'
+                sh 'docker rm $APP_NAME || true'
             }
         }
 
-        stage('Deploy Container') {
+        stage('Run Container') {
             steps {
-                sh '''
-                    docker run -d \
-                    --name $APP_NAME \
-                    -p 3000:3000 \
-                    $APP_NAME
-                '''
+                sh 'docker run -d -p 3000:3000 --name $APP_NAME $APP_NAME'
             }
         }
-
     }
 }
